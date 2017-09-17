@@ -4,7 +4,7 @@
 
 bool LeftMouseDown = true;
 int leftMouseVKCode = 1;
-int RecoilState = 4;
+int RecoilState = 3;
 
 void __stdcall RemoveRecoil()
 {
