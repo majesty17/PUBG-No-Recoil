@@ -1,76 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Gma.System.MouseKeyHook;
+#include "stdafx.h"
+#include "windows.h"
+#include <iostream>
 
-namespace NoRecoil
+bool LeftMouseDown = true;
+int leftMouseVKCode = 1;
+int RecoilState = 4;
+
+void __stdcall RemoveRecoil()
 {
-    public partial class Form1 : Form
-    {
-        private IKeyboardMouseEvents m_GlobalHook;
+	HWND foregroundWin;
 
-        public Form1()
-        {
-            InitializeComponent();
-            m_GlobalHook = Hook.GlobalEvents();
-            m_GlobalHook.MouseDownExt += GlobalHookMouseDownExt;
-            m_GlobalHook.MouseUpExt += GlobalHookMouseUpExt;
+	leftMouseVKCode = 1;
+	while (1)
+	{
+		foregroundWin = GetForegroundWindow();
+		if (foregroundWin == FindWindowA("UnrealWindow", 0) && RecoilState == 3)
+		{
+			if (LeftMouseDown)
+			{
+				Sleep(30u);
+				mouse_event(1u, 0, 2u, 0, 3u);
+			}
+		}
+		Sleep(1u);
+	}
+}
 
-            m_GlobalHook.KeyPress += GlobalHookKeyPress;
-        }
-        private bool _enabled = false;
+void __stdcall KeyHandlerThread()
+{
+	while (1)
+	{
+		if (GetAsyncKeyState(0x78) < 0)           // F9 turns recoil reducer on.
+		{
+			RecoilState = 3;
+			Beep(0x320u, 0xC8u);
+		}
+		if (GetAsyncKeyState(0x79) < 0)           // F10 turns recoil reducer off.
+		{
+			RecoilState = 4;
+			Beep(0x64u, 0xC8u);
+		}
+		LeftMouseDown = GetAsyncKeyState(leftMouseVKCode) < 0;
+		Sleep(1u);
+	}
+}
 
-        private int frequence = 0;
+void main() {
 
-        private bool enabled
-        {
-            get
-            {
-                return _enabled;
-            }
-            set
-            {
-                _enabled = value;
-            }
-        }
+	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)RemoveRecoil, 0, 0, 0);
+	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)KeyHandlerThread, 0, 0, 0);
 
-        private void EnableNoRecoil()
-        {
-            int i = 0;
-            while (i < 5)
-            {
-                Cursor.Position = new Point(Cursor.Position.X, Cursor.Position.Y + 15);
-                System.Threading.Thread.Sleep(25);
-                i++;
-            }
-        }
+	std::cin.get();
 
-        private void GlobalHookMouseDownExt(object sender, MouseEventExtArgs e)
-        {
-            if (enabled) EnableNoRecoil();
-        }
-
-        private void GlobalHookMouseUpExt(object sender, MouseEventExtArgs e)
-        {
-
-        }
-
-        private void GlobalHookKeyPress(object sender, KeyPressEventArgs e)
-        {
-            string key = e.KeyChar.ToString();
-            if (key == "b" && !enabled)
-            {
-                enabled = true;
-            } else if (key == "b" && enabled)
-            {
-                enabled = false;
-            }
-        }
-    }
 }
