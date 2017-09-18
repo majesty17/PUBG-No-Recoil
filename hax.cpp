@@ -1,10 +1,27 @@
-#include "stdafx.h"
 #include "windows.h"
 #include <iostream>
 
+//with different weapons, there are different fire rate and recoil.
+DWORD recoilStep=2u;
+DWORD fireRate=30u;
+/*
+weapon   fireRate   recoilUp
+-----------------------------
+AKM      0.100s     8
+SCAR-L   0.096s     7
+M16A4    0.075s     7
+M416     0.086s     7
+UMP9     0.092s     5
+SKS      0.090s     8
+UZI      0.048s     5
+*/
+
 bool LeftMouseDown = true;
 int leftMouseVKCode = 1;
-int RecoilState = 3;
+int RecoilState = 4;       //default state is turned off;
+
+//to be changed into real game window name
+LPCTSTR windowsName="notepad";
 
 void __stdcall RemoveRecoil()
 {
@@ -14,12 +31,12 @@ void __stdcall RemoveRecoil()
 	while (1)
 	{
 		foregroundWin = GetForegroundWindow();
-		if (foregroundWin == FindWindowA("UnrealWindow", 0) && RecoilState == 3)
+		if (foregroundWin == FindWindowA(windowsName, 0) && RecoilState == 3)
 		{
 			if (LeftMouseDown)
 			{
-				Sleep(30u);
-				mouse_event(1u, 0, 2u, 0, 3u);
+				Sleep(fireRate);
+				mouse_event(1u, 0, recoilStep, 0, 3u);
 			}
 		}
 		Sleep(1u);
@@ -45,7 +62,7 @@ void __stdcall KeyHandlerThread()
 	}
 }
 
-void main() {
+int main() {
 
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)RemoveRecoil, 0, 0, 0);
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)KeyHandlerThread, 0, 0, 0);
